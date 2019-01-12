@@ -1,0 +1,50 @@
+version: "2.0"
+services:
+  mydb:
+    container_name: "mydb"
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:      #挂載目录
+      - /home/kirito/mysql:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro #设置容器时期和宿主机同步
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    image: mysql:5.7 #容器引用镜像
+  myredis:
+    container_name: "myredis"
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:      #挂載目录
+      - /home/kirito/redis:/data
+      - /etc/localtime:/etc/localtime:ro #设置容器时期和宿主机同步
+    image: redis:latest #容器引用镜像
+  myphp:
+    build: ./php/
+    container_name: "myphp"
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:      #挂載目录
+      - /home/kirito/www:/var/www
+      - /var/run/sock:/tmp/sock
+      - /etc/php:/usr/local/etc
+      - /etc/localtime:/etc/localtime:ro #设置容器时期和宿主机同步
+    links:
+      - "mydb"
+      - "myredis"
+  mynginx:
+    container_name: "mynginx"
+    restart: always
+    ports:
+      - "80:80"
+    volumes:      #挂載目录
+      - /home/kirito/www:/usr/share/nginx/www
+      - /etc/nginx:/etc/nginx
+      - /home/kirito/logs/nginx.logs:/var/log/nginx
+      - /etc/localtime:/etc/localtime:ro #设置容器时期和宿主机同步
+      - /var/run/sock:/var/run/sock
+    links:
+      - "myphp"
+    image: nginx:latest #容器引用镜像
